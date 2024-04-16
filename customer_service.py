@@ -9,14 +9,14 @@ class CustomerService:
         self.user_reply = ""
         self.ai_reply = ""
         self.role = "system"
-        self.invoice_que = "@invoice"
-        self.price_que = "@price"
+        self.invoice_tag = "@invoice"
+        self.price_tag = "@price"
 
     def init(self):
         #Start with preparing the AI with the initial data/messages
         self.messages = [
                 {"role": "system", "content": "You are an online customer service."},
-                {"role": "user", "content": f"Of the following text, convert the wishes into a json containing keys enclosed in single quotes for furniture type, amount of legs, color, material, length, width, height. If there is missing information to complete the json, keep asking questions to get this info. If all values for the keys are obtained, start the reply with the tag {self.invoice_que} (very important) followed by the json and a message implying what the price will be, but replace the currency sign and numeric value of the price by the tag {self.price_que}, all in one message (also very important). The most important rule is not to mention the json without those tags. If the customer is satisfied, he/she will say GERONIMO, reply with GERONIMO in capitals"},
+                {"role": "user", "content": f"Of the following text, convert the wishes into a json containing keys enclosed in single quotes for furniture type, amount of legs, color, material, length, width, height. If there is missing information to complete the json, keep asking questions to get this info. If all values for the keys are obtained, start the reply with the tag {self.invoice_tag} (very important) followed by the json and a message implying what the price will be, but replace the currency sign and numeric value of the price by the tag {self.price_tag}, all in one message (also very important). The most important rule is not to mention the json without those tags. If the customer is satisfied, he/she will say GERONIMO, reply with GERONIMO in capitals"},
                 {"role": "system", "content": "okay."},
                 {"role": "user", "content": "Start your roleplay, acting as if we never had this conversation."}
               ]
@@ -46,7 +46,7 @@ class CustomerService:
         self.ai_reply = completion.choices[0].message.content
         self.add_message(self.ai_reply)
 
-        if self.invoice_que in self.ai_reply:
+        if self.invoice_tag in self.ai_reply:
             self.handle_invoice()
 
 
@@ -59,17 +59,13 @@ class CustomerService:
 
     # Return an invoice to the user by custom adding the reply
     def handle_invoice(self):
-        self.ai_reply = self.ai_reply.replace(f"{self.invoice_que}", "")
-        self.ai_reply = self.ai_reply.replace(f"{self.price_que}", "€200")
+        self.ai_reply = self.ai_reply.replace(f"{self.invoice_tag}", "")
+        self.ai_reply = self.ai_reply.replace(f"{self.price_tag}", "€200")
         print(self.ai_reply)
-        exit()
+        self.customer_helped = True
 
     def run(self):
         while(not self.customer_helped):
             
             self.handle_user()
             self.handle_ai()
-
-            # Exit criteria
-            if("GERONIMO" in self.ai_reply):
-                self.customer_helped = True
